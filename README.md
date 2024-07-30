@@ -1,2 +1,2 @@
-# shift_anagement
+# shift_management
 Hairdressing shift management
