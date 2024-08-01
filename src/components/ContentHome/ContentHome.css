@@ -1,0 +1,44 @@
+.home-content {
+    
+    color: #333;
+    padding: 50px 0;
+    text-align: center;
+  }
+  
+  .home-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .home-description {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  
+  .cta-button {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #495057;
+    border-color: #495057;
+  }
+  
+  .home-image img {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+
+@media (max-width: 767.98px) {
+    .image-col {
+      margin-top: 30px;
+    }
+  }

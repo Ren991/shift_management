@@ -1,3 +1,4 @@
+import ContentHome from "../../components/ContentHome/ContentHome"
 import NavbarHead from "../../components/Navbar/Navbar"
 
 function Home() {
@@ -6,7 +7,7 @@ function Home() {
     return (
       <>
         <NavbarHead/>
-        <h1>Shift Management</h1>
+        <ContentHome/>
       </>
     )
   }
