@@ -1,8 +1,10 @@
 import React from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Link, useLocation,  useNavigate  } from "react-router-dom";
 import './ContentHome.css';
 
 const ContentHome = () => {
+    const navigate = useNavigate();
   return (
     <Container className="home-content">
       <Row className="align-items-center">
@@ -11,7 +13,7 @@ const ContentHome = () => {
           <p className="home-description">
             Experience the best haircut and grooming services with our professional barbers.
           </p>
-          <Button className="cta-button" variant="primary">Schedule your appointment</Button>
+          <Button onClick={()=>navigate("/pick_date")} className="cta-button" variant="primary">Schedule your appointment</Button>
         </Col>
         <Col md={6} className="image-col">
           <div className="home-image">
