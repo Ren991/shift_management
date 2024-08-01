@@ -1,3 +1,5 @@
+import Home from "./pages/Home/Home"
+
 
 
 function App() {
@@ -5,7 +7,7 @@ function App() {
 
   return (
     <>
-      <h1>Shift Management</h1>
+      <Home/>
     </>
   )
 }
