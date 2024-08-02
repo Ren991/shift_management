@@ -1,67 +1,59 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { DayPicker } from "react-day-picker";
 import { FaClock } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import "react-day-picker/style.css";
-import { getApp } from "firebase/app";
 import { db } from "../../Services/Service";
-import { collection, addDoc,doc,setDoc,getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const MySwal = withReactContent(Swal);
 
 function Content_Pick_Date() {
-
-    
   const [selected, setSelected] = useState();
+  const [appointments, setAppointments] = useState([]);
 
-  async function fetchDocuments() {
+  const fetchAppointments = async (selectedDate) => {
+    if (!selectedDate) return;
+
     try {
       const userCollectionRef = collection(db, 'workinDays');
-      const querySnapshot = await getDocs(userCollectionRef);
-      console.log(querySnapshot)
-  
-      if (querySnapshot.empty) {
-        console.log("No documents found.");
-        return;
-      }
-  
+      const q = query(userCollectionRef, where("date", "==", selectedDate.toLocaleDateString()));
+      const querySnapshot = await getDocs(q);
+
+      const fetchedAppointments = [];
       querySnapshot.forEach((doc) => {
-        console.log(`${doc.id} =>`, doc.data());
+        fetchedAppointments.push(doc.data());
       });
+
+      setAppointments(fetchedAppointments);
+      console.log("Appointments fetched: ", fetchedAppointments);
     } catch (e) {
       console.error("Error fetching documents: ", e);
     }
-  }
-  
-  const array = [
-    {
-      time: "14:00",
-      ocupped: true
-    },
-    {
-      time: "15:00",
-      ocupped: false
-    },
-    {
-      time: "16:00",
-      ocupped: false
-    }
-  ];
+  };
 
   const handleClockClick = (time) => {
     MySwal.fire(`Clicked on clock for ${time}`);
   };
 
   const showAppointmentsModal = () => {
-    fetchDocuments();
-    console.log("EL DIAA SELECCIONADO => " , selected.toLocaleDateString());
+    console.log("EL DIA SELECCIONADO => ", selected?.toLocaleDateString());
+
+    if (appointments.length === 0 || !appointments[0].shifts || appointments[0].shifts.length === 0) {
+      MySwal.fire({
+        icon: "error",
+        title: "No hay turnos",
+        text: "No hay turnos disponibles para la fecha seleccionada.",
+      });
+      return;
+    }
 
     MySwal.fire({
       title: 'Shifts',
       html: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {array.map((appointment, index) => (
+          {appointments[0].shifts.map((appointment, index) => (
             <div
               key={index}
               style={{
@@ -74,7 +66,7 @@ function Content_Pick_Date() {
               }}
             >
               <span>{appointment.time}</span>
-              {!appointment.ocupped && (
+              {!appointment.occupied && (
                 <button
                   style={{
                     background: 'none',
@@ -82,7 +74,7 @@ function Content_Pick_Date() {
                     cursor: 'pointer',
                     fontSize: '1.2em',
                   }}
-                  /* onClick={() => handleClockClick(appointment.time)} */
+                  onClick={() => handleClockClick(appointment.time)}
                 >
                   <FaClock />
                 </button>
@@ -96,12 +88,23 @@ function Content_Pick_Date() {
     });
   };
 
-  
   useEffect(() => {
     if (selected) {
-      showAppointmentsModal();
+      fetchAppointments(selected);
     }
   }, [selected]);
+
+  useEffect(() => {
+    if (appointments.length > 0) {
+      showAppointmentsModal();
+    } else if (selected) {
+        MySwal.fire({
+            icon: "error",
+            title: "No Appointments",
+            text: "No appointments available for the selected date.",
+          });
+    }
+  }, [appointments]);
 
   return (
     <DayPicker
