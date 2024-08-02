@@ -1,14 +1,39 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { DayPicker } from "react-day-picker";
 import { FaClock } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import "react-day-picker/style.css";
+import { getApp } from "firebase/app";
+import { db } from "../../Services/Service";
+import { collection, addDoc,doc,setDoc,getDocs } from "firebase/firestore";
 
 const MySwal = withReactContent(Swal);
 
 function Content_Pick_Date() {
+
+    
   const [selected, setSelected] = useState();
+
+  async function fetchDocuments() {
+    try {
+      const userCollectionRef = collection(db, 'workinDays');
+      const querySnapshot = await getDocs(userCollectionRef);
+      console.log(querySnapshot)
+  
+      if (querySnapshot.empty) {
+        console.log("No documents found.");
+        return;
+      }
+  
+      querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} =>`, doc.data());
+      });
+    } catch (e) {
+      console.error("Error fetching documents: ", e);
+    }
+  }
+  
   const array = [
     {
       time: "14:00",
@@ -29,8 +54,11 @@ function Content_Pick_Date() {
   };
 
   const showAppointmentsModal = () => {
+    fetchDocuments();
+    console.log("EL DIAA SELECCIONADO => " , selected.toLocaleDateString());
+
     MySwal.fire({
-      title: 'Choose your Shift',
+      title: 'Shifts',
       html: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {array.map((appointment, index) => (
@@ -54,7 +82,7 @@ function Content_Pick_Date() {
                     cursor: 'pointer',
                     fontSize: '1.2em',
                   }}
-                  onClick={() => handleClockClick(appointment.time)}
+                  /* onClick={() => handleClockClick(appointment.time)} */
                 >
                   <FaClock />
                 </button>
@@ -68,12 +96,12 @@ function Content_Pick_Date() {
     });
   };
 
-  if (selected) {
-    console.log(selected.toLocaleDateString());
-    showAppointmentsModal();
-  } else {
-    console.log(selected);
-  }
+  
+  useEffect(() => {
+    if (selected) {
+      showAppointmentsModal();
+    }
+  }, [selected]);
 
   return (
     <DayPicker
