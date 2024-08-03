@@ -34,7 +34,27 @@ function Content_Pick_Date() {
   };
 
   const handleClockClick = (time) => {
-    MySwal.fire(`Clicked on clock for ${time}`);
+    MySwal.fire({
+      title: `Appointment at ${time}`,
+      html: `
+        <input type="text" id="name" class="swal2-input" placeholder="Name">
+        <input type="email" id="email" class="swal2-input" placeholder="Email">
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Submit',
+      preConfirm: () => {
+        const name = Swal.getPopup().querySelector('#name').value;
+        const email = Swal.getPopup().querySelector('#email').value;
+        if (!name || !email) {
+          Swal.showValidationMessage(`Please enter both name and email`);
+        }
+        return { name: name, email: email };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log(`Name: ${result.value.name}, Email: ${result.value.email}`);
+      }
+    });
   };
 
   const showAppointmentsModal = () => {
