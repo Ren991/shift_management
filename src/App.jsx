@@ -3,6 +3,7 @@ import Home from './pages/Home/Home';
 import Pick_Date from './pages/Pick_Date/Pick_Date';
 import Login from './pages/Login/Login';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import Admin from './pages/Admin/Admin';
 
 
 
@@ -22,6 +23,10 @@ function App() {
     {
       path:"/login",
       element:<Login/>
+    },
+    {
+      path:"/admin",
+      element:<Admin/>
     }
 
   ]);
