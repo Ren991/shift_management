@@ -1,78 +1,63 @@
-import { db } from "./Service";
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { db } from './Service';
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, setDoc } from 'firebase/firestore';
 
-// Obtener turnos de un día específico
+// Obtener citas por fecha
 export const getAppointmentsByDate = async (date) => {
-  try {
-    const userCollectionRef = collection(db, 'workinDays');
-    const q = query(userCollectionRef, where("date", "==", date.toLocaleDateString()));
+    const appointmentsRef = collection(db, 'workinDays');
+    const q = query(appointmentsRef, where('date', '==', date.toLocaleDateString()));
     const querySnapshot = await getDocs(q);
-
-    const fetchedAppointments = [];
+    const appointments = [];
     querySnapshot.forEach((doc) => {
-      fetchedAppointments.push({ id: doc.id, ...doc.data() });
+      appointments.push({ id: doc.id, ...doc.data() });
     });
+    console.log(appointments)
+    return appointments.length > 0 ? appointments[0] : null;
+  };
 
-    return fetchedAppointments;
-  } catch (error) {
-    console.error("Error fetching documents: ", error);
-    throw error;
+// Agregar cita
+export const addAppointment = async (date, appointment) => {
+  const appointments = await getAppointmentsByDate(date);
+  if (appointments) {
+    const docRef = doc(db, 'workinDays', appointments.id);
+    await updateDoc(docRef, {
+      shifts: arrayUnion(appointment)
+    });
+  } else {
+    const newDocRef = doc(collection(db, 'workinDays'));
+    await setDoc(newDocRef, {
+      date: date.toLocaleDateString(),
+      shifts: [appointment]
+    });
   }
 };
 
-// Agregar un turno a un día específico
-export const addAppointment = async (date, appointment) => {
-    const appointments = await getAppointmentsByDate(date);
-    console.log(appointments);
-    if (appointments) {
-      const docRef = doc(db, 'workinDays', appointments.id);
+// Eliminar cita
+export const deleteAppointment = async (date, appointment) => {
+  const appointments = await getAppointmentsByDate(date);
+  if (appointments) {
+    const docRef = doc(db, 'workinDays', appointments.id);
+    await updateDoc(docRef, {
+      shifts: arrayRemove(appointment)
+    });
+  }
+};
+
+// Actualizar cita
+export const updateAppointment = async (date, oldAppointment, newAppointment) => {
+  await deleteAppointment(date, oldAppointment);
+  await addAppointment(date, newAppointment);
+};
+
+
+export const confirmAppointment = async (date, appointment) => {
+    const appointmentData = await getAppointmentsByDate(date);
+    if (appointmentData) {
+      const updatedShifts = appointmentData.shifts.map((shift) =>
+        shift.time === appointment.time ? { ...shift, confirmed: true } : shift
+      );
+      const docRef = doc(db, 'workinDays', appointmentData.id);
       await updateDoc(docRef, {
-        shifts: arrayUnion(appointment)
-      });
-    } else {
-      const newDocRef = doc(collection(db, 'workinDays'));
-      await setDoc(newDocRef, {
-        date: date.toLocaleDateString(),
-        shifts: [appointment]
+        shifts: updatedShifts
       });
     }
   };
-
-// Eliminar un turno
-export const deleteAppointment = async (id) => {
-  try {
-    await deleteDoc(doc(db, 'workinDays', id));
-  } catch (error) {
-    console.error("Error deleting document: ", error);
-    throw error;
-  }
-};
-
-// Editar un turno
-export const updateAppointment = async (id, updatedAppointment) => {
-  try {
-    const appointmentDoc = doc(db, 'workinDays', id);
-    await updateDoc(appointmentDoc, updatedAppointment);
-  } catch (error) {
-    console.error("Error updating document: ", error);
-    throw error;
-  }
-};
-
-// Agregar múltiples turnos a un día específico
-export const addMultipleAppointments = async (date, appointments) => {
-  const batch = db.batch();
-  try {
-    appointments.forEach((appointment) => {
-      const docRef = doc(collection(db, 'workinDays'));
-      batch.set(docRef, {
-        date: date.toLocaleDateString(),
-        ...appointment
-      });
-    });
-    await batch.commit();
-  } catch (error) {
-    console.error("Error adding multiple documents: ", error);
-    throw error;
-  }
-};
