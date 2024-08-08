@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import "react-day-picker/style.css";
 import { db } from "../../Services/Service";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 
 const MySwal = withReactContent(Swal);
 
@@ -15,17 +15,17 @@ function Content_Pick_Date() {
 
   const fetchAppointments = async (selectedDate) => {
     if (!selectedDate) return;
-
+  
     try {
       const userCollectionRef = collection(db, 'workinDays');
       const q = query(userCollectionRef, where("date", "==", selectedDate.toLocaleDateString()));
       const querySnapshot = await getDocs(q);
-
+  
       const fetchedAppointments = [];
       querySnapshot.forEach((doc) => {
-        fetchedAppointments.push(doc.data());
+        fetchedAppointments.push({ id: doc.id, ...doc.data() }); // Incluye el id del documento
       });
-
+  
       setAppointments(fetchedAppointments);
       console.log("Appointments fetched: ", fetchedAppointments);
     } catch (e) {
@@ -50,12 +50,28 @@ function Content_Pick_Date() {
         }
         return { name: name, email: email };
       }
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         console.log(`Name: ${result.value.name}, Email: ${result.value.email}`);
+        
+        // Buscar el turno en appointments y actualizarlo
+        const updatedShifts = appointments[0].shifts.map(shift => 
+          shift.time === time ? { ...shift, name: result.value.name, mail: result.value.email, occupied: true } : shift
+        );
+        console.log(appointments)
+        
+        // Obtener referencia del documento en Firebase
+        const docRef = doc(db, 'workinDays', appointments[0].id);
+        console.log(docRef);
+        await updateDoc(docRef, {
+          shifts: updatedShifts
+        });
+  
+        MySwal.fire('Success', 'Your appointment has been booked!', 'success');
       }
     });
   };
+  
 
   const showAppointmentsModal = () => {
     console.log("EL DIA SELECCIONADO => ", selected?.toLocaleDateString());

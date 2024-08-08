@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Table, Container, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus, FaCheck } from 'react-icons/fa';
 import { DayPicker } from 'react-day-picker';
-import { getAppointmentsByDate, addAppointment, deleteAppointment, updateAppointment, confirmAppointment } from '../../Services/FirebaseFunctions';
+import { getAppointmentsByDate, addAppointment, deleteAppointment, confirmAppointment } from '../../Services/FirebaseFunctions';
 
 const Content_Admin = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [currentAppointment, setCurrentAppointment] = useState({ time: '', occupied: false, name: '', mail: '', confirmed: false });
+  const [currentAppointment, setCurrentAppointment] = useState({ time: '', occupied: false, confirmed: false });
   const [editing, setEditing] = useState(false);
   const [oldAppointment, setOldAppointment] = useState(null);
 
@@ -17,6 +17,8 @@ const Content_Admin = () => {
     setAppointments(fetchedAppointments ? fetchedAppointments.shifts : []);
   };
 
+  
+
   const handleAddAppointment = async () => {
     try {
       await addAppointment(selectedDate, currentAppointment);
@@ -24,16 +26,6 @@ const Content_Admin = () => {
       handleCloseModal();
     } catch (error) {
       console.error("Error adding appointment: ", error);
-    }
-  };
-
-  const handleEditAppointment = async () => {
-    try {
-      await updateAppointment(selectedDate, oldAppointment, currentAppointment);
-      fetchAppointments(selectedDate);
-      handleCloseModal();
-    } catch (error) {
-      console.error("Error updating appointment: ", error);
     }
   };
 
@@ -57,12 +49,12 @@ const Content_Admin = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentAppointment({ time: '', occupied: false, name: '', mail: '', confirmed: false });
+    setCurrentAppointment({ time: '', occupied: false, confirmed: false });
     setEditing(false);
     setOldAppointment(null);
   };
 
-  const openModal = (appointment = { time: '', occupied: false, name: '', mail: '', confirmed: false }) => {
+  const openModal = (appointment = { time: '', occupied: false, confirmed: false }) => {
     setCurrentAppointment(appointment);
     setShowModal(true);
     if (appointment.time) {
@@ -115,8 +107,8 @@ const Content_Admin = () => {
               {appointments.map((appointment, index) => (
                 <tr key={index}>
                   <td>{appointment.time}</td>
-                  <td>{appointment.name}</td>
-                  <td>{appointment.mail}</td>
+                  <td>{appointment.name || 'N/A'}</td>
+                  <td>{appointment.mail || 'N/A'}</td>
                   <td>{appointment.occupied ? 'Occupied' : 'Available'}</td>
                   <td>{appointment.confirmed ? 'Yes' : 'No'}</td>
                   <td>
@@ -165,47 +157,13 @@ const Content_Admin = () => {
                 onChange={(e) => setCurrentAppointment({ ...currentAppointment, time: e.target.value })}
               />
             </Form.Group>
-            <Form.Group controlId="formName" className="mt-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter name"
-                value={currentAppointment.name}
-                onChange={(e) => setCurrentAppointment({ ...currentAppointment, name: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group controlId="formMail" className="mt-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter email"
-                value={currentAppointment.mail}
-                onChange={(e) => setCurrentAppointment({ ...currentAppointment, mail: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group controlId="formOccupied" className="mt-3">
-              <Form.Check
-                type="checkbox"
-                label="Occupied"
-                checked={currentAppointment.occupied}
-                onChange={(e) => setCurrentAppointment({ ...currentAppointment, occupied: e.target.checked })}
-              />
-            </Form.Group>
-            <Form.Group controlId="formConfirmed" className="mt-3">
-              <Form.Check
-                type="checkbox"
-                label="Confirmed"
-                checked={currentAppointment.confirmed}
-                onChange={(e) => setCurrentAppointment({ ...currentAppointment, confirmed: e.target.checked })}
-              />
-            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
             Close
           </Button>
-          <Button variant="primary" onClick={editing ? handleEditAppointment : handleAddAppointment}>
+          <Button variant="primary" onClick={editing ? handleAddAppointment : handleAddAppointment}>
             {editing ? 'Save Changes' : 'Add Appointment'}
           </Button>
         </Modal.Footer>
