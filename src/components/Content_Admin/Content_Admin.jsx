@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Table, Container, Row, Col } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaPlus, FaCheck } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaCheck,FaTimes } from 'react-icons/fa';
 import { DayPicker } from 'react-day-picker';
-import { getAppointmentsByDate, addAppointment, deleteAppointment, confirmAppointment } from '../../Services/FirebaseFunctions';
+import { getAppointmentsByDate, addAppointment, deleteAppointment, confirmAppointment ,unconfirmAppointment} from '../../Services/FirebaseFunctions';
 
 const Content_Admin = () => {
   const [appointments, setAppointments] = useState([]);
@@ -47,6 +47,21 @@ const Content_Admin = () => {
     }
   };
 
+  const handleUnconfirmClick = async (appointment) => {
+    try {
+      console.log(appointments);
+      // Actualiza los turnos para desconfirmar el turno
+      const updatedShifts = appointments.map((shift) =>
+        shift.time === appointment.time ? { ...shift, name: "", mail: "", occupied: false, confirmed: false } : shift
+      );
+  
+      // Llama a la función para actualizar el documento en Firestore
+      await unconfirmAppointment(selectedDate, appointment);
+      fetchAppointments(selectedDate); // Vuelve a cargar los turnos actualizados
+    } catch (error) {
+      console.error("Error unconfirming appointment: ", error);
+    }
+  };
   const handleCloseModal = () => {
     setShowModal(false);
     setCurrentAppointment({ time: '', occupied: false, confirmed: false });
@@ -132,6 +147,14 @@ const Content_Admin = () => {
                         onClick={() => handleConfirmAppointment(appointment)}
                       >
                         <FaCheck />
+                      </Button>
+                    )}
+                    {appointment.confirmed && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleUnconfirmClick(appointment)}
+                      >
+                        <FaTimes /> Cancel
                       </Button>
                     )}
                   </td>

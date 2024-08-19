@@ -79,8 +79,8 @@ function Content_Pick_Date() {
     if (appointments.length === 0 || !appointments[0].shifts || appointments[0].shifts.length === 0) {
       MySwal.fire({
         icon: "error",
-        title: "No hay turnos",
-        text: "No hay turnos disponibles para la fecha seleccionada.",
+        title: "There are no turns",
+        text: "There are no appointments available for the selected date.",
       });
       return;
     }

@@ -54,3 +54,16 @@ export const confirmAppointment = async (date, appointment) => {
       });
     }
   };
+
+  export const unconfirmAppointment = async (date, appointment) => {
+    const appointments = await getAppointmentsByDate(date);
+    if (appointments) {
+      const updatedShifts = appointments.shifts.map((shift) =>
+        shift.time === appointment.time ? { ...shift, confirmed: false, occupied: false } : shift
+      );
+      const docRef = doc(db, 'workinDays', appointments.id);
+      await updateDoc(docRef, {
+        shifts: updatedShifts
+      });
+    }
+  };
