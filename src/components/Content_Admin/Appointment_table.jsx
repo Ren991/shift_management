@@ -3,6 +3,11 @@ import { Table, Button } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 
 const AppointmentTable = ({ appointments, onEdit, onDelete, onConfirm, onUnconfirm }) => {
+    const sortedAppointments = appointments.sort((a, b) => {
+        const timeA = parseInt(a.time.replace(':', ''), 10);
+        const timeB = parseInt(b.time.replace(':', ''), 10);
+        return timeA - timeB;
+      });
   return (
     <Table striped bordered hover>
       <thead>
@@ -16,7 +21,7 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onConfirm, onUnconfi
         </tr>
       </thead>
       <tbody>
-        {appointments.map((appointment, index) => (
+        {sortedAppointments.map((appointment, index) => (
           <tr key={index}>
             <td>{appointment.time}</td>
             <td>{appointment.name || 'N/A'}</td>

@@ -27,7 +27,6 @@ function Content_Pick_Date() {
       });
   
       setAppointments(fetchedAppointments);
-      console.log("Appointments fetched: ", fetchedAppointments);
     } catch (e) {
       console.error("Error fetching documents: ", e);
     }

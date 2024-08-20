@@ -45,6 +45,23 @@ const useAppointments = (selectedDate) => {
     }
   };
 
+  const handleAddMultipleAppointments = async (start, end) => {
+    try {
+      for (let hour = start; hour <= end; hour++) {
+        const newAppointment = {
+          time: `${hour}:00`,
+          occupied: false,
+          confirmed: false,
+        };
+        await handleAddAppointment(newAppointment);
+      }
+      fetchAppointments(selectedDate);
+    } catch (error) {
+      console.error("Error adding multiple appointments: ", error);
+    }
+  };
+
+
   useEffect(() => {
     if (selectedDate) {
       fetchAppointments(selectedDate);
@@ -57,7 +74,8 @@ const useAppointments = (selectedDate) => {
     handleAddAppointment,
     handleDeleteAppointment,
     handleConfirmAppointment,
-    handleUnconfirmAppointment
+    handleUnconfirmAppointment,
+    handleAddMultipleAppointments
   };
 };
 

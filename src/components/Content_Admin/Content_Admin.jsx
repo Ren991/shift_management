@@ -5,10 +5,12 @@ import { DayPicker } from 'react-day-picker';
 import useAppointments from './useAppointments';
 import AppointmentModal from './AppointmentModal';
 import AppointmentTable from './Appointment_table';
+import MultiAppointmentModal from './MultiAppointmentModal';
 
 const Content_Admin = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showMultiModal, setShowMultiModal] = useState(false);
   const [currentAppointment, setCurrentAppointment] = useState({ time: '', occupied: false, confirmed: false });
   const [editing, setEditing] = useState(false);
   const {
@@ -16,7 +18,8 @@ const Content_Admin = () => {
     handleAddAppointment,
     handleDeleteAppointment,
     handleConfirmAppointment,
-    handleUnconfirmAppointment
+    handleUnconfirmAppointment,
+    handleAddMultipleAppointments // Agregar múltiples citas
   } = useAppointments(selectedDate);
 
   const handleCloseModal = () => {
@@ -25,12 +28,20 @@ const Content_Admin = () => {
     setEditing(false);
   };
 
+  const handleCloseMultiModal = () => {
+    setShowMultiModal(false);
+  };
+
   const openModal = (appointment = { time: '', occupied: false, confirmed: false }) => {
     setCurrentAppointment(appointment);
     setShowModal(true);
     if (appointment.time) {
       setEditing(true);
     }
+  };
+
+  const openMultiModal = () => {
+    setShowMultiModal(true);
   };
 
   return (
@@ -54,7 +65,7 @@ const Content_Admin = () => {
             <Button variant="primary" onClick={() => openModal()}>
             <FaPlus /> Add Appointment
           </Button>
-          <Button>
+          <Button variant="primary" onClick={openMultiModal}>
             <FaPlus /> Add Daily Appointments
           </Button> 
           </>
@@ -81,6 +92,12 @@ const Content_Admin = () => {
         currentAppointment={currentAppointment}
         setCurrentAppointment={setCurrentAppointment}
         editing={editing}
+      />
+
+      <MultiAppointmentModal
+        show={showMultiModal}
+        onClose={handleCloseMultiModal}
+        onSave={handleAddMultipleAppointments} // Añadir múltiples citas
       />
     </Container>
   );
